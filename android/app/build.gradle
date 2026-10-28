@@ -117,3 +117,9 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Font icon cho react-native-vector-icons (chỉ nạp bộ MaterialCommunityIcons)
+project.ext.vectoricons = [
+    iconFontNames: [ 'MaterialCommunityIcons.ttf' ]
+]
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")

@@ -1,18 +1,22 @@
 import { StyleSheet } from 'react-native';
 
-// Một màu nhấn (xanh men gốm) trên nền trung tính lạnh
+// "Gạch bông": xanh lục lam đậm + vàng nghệ trên nền xám đá
 export const colors = {
-  primary: '#1F4E99',
-  primaryContainer: '#DCE6F7',
-  onPrimaryContainer: '#0B2A5B',
-  background: '#F3F5F8',
+  primary: '#0E5A5C',
+  primaryContainer: '#D4EBE8',
+  onPrimaryContainer: '#06393A',
+  accent: '#E0A21B',
+  accentContainer: '#FCEFCF',
+  onAccent: '#3A2900',
+  background: '#ECEFEA',
   card: '#FFFFFF',
-  text: '#1A1F2B',
-  textMuted: '#4A5468',
-  border: '#D3D9E3',
+  text: '#16211F',
+  textMuted: '#4A5856',
+  border: '#D0D8D3',
   danger: '#B3261E',
-  disabled: '#E3E7ED',
-  disabledText: '#6B7385',
+  dangerContainer: '#FBE3E1',
+  disabled: '#DFE4E0',
+  disabledText: '#6A7673',
 };
 
 export const font = {
@@ -20,6 +24,7 @@ export const font = {
   normal: 16,
   large: 18,
   title: 22,
+  display: 30,
 };
 
 export const spacing = 12;
@@ -31,12 +36,12 @@ export const common = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: spacing,
     marginHorizontal: spacing,
     marginBottom: spacing,
     elevation: 2,
-    shadowColor: '#0B2A5B',
+    shadowColor: colors.onPrimaryContainer,
     shadowOpacity: 0.08,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
@@ -45,10 +50,10 @@ export const common = StyleSheet.create({
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: spacing,
-    minHeight: 48,
-    fontSize: font.normal,
+    minHeight: 52,
+    fontSize: font.large,
     color: colors.text,
   },
   inputError: {
@@ -58,14 +63,14 @@ export const common = StyleSheet.create({
   errorText: {
     color: colors.danger,
     fontSize: font.small,
-    marginTop: 4,
+    marginTop: 6,
   },
   label: {
     fontSize: font.small,
     fontWeight: '600',
     color: colors.textMuted,
-    marginBottom: 6,
-    marginTop: spacing * 1.5,
+    marginBottom: 8,
+    marginTop: spacing * 2,
   },
   empty: {
     textAlign: 'center',
@@ -73,5 +78,15 @@ export const common = StyleSheet.create({
     fontSize: font.normal,
     marginTop: 40,
     marginHorizontal: spacing * 2,
+  },
+  // Thanh cố định ở đáy màn (tạm tính, nút lưu, xác nhận)
+  bottomBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing,
+    padding: spacing,
+    backgroundColor: colors.card,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
 });

@@ -4,14 +4,14 @@ import {
   StyleProp,
   StyleSheet,
   Text,
-  View,
   ViewStyle,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors, font } from '../theme';
 
 type Props = {
   title?: string;
-  icon?: 'plus' | 'minus';
+  icon?: string;
   onPress: () => void;
   disabled?: boolean;
   outline?: boolean;
@@ -53,23 +53,9 @@ export default function AppButton({
         style,
       ]}
     >
-      {icon && <PlusMinus type={icon} color={color} />}
+      {icon && <Icon name={icon} size={small ? 22 : 20} color={color} />}
       {title ? <Text style={[styles.text, { color }]}>{title}</Text> : null}
     </Pressable>
-  );
-}
-
-// Dấu + / − vẽ bằng View để nét đều nhau
-function PlusMinus({ type, color }: { type: 'plus' | 'minus'; color: string }) {
-  return (
-    <View style={styles.icon}>
-      <View style={[styles.bar, { backgroundColor: color }]} />
-      {type === 'plus' && (
-        <View
-          style={[styles.bar, styles.barVertical, { backgroundColor: color }]}
-        />
-      )}
-    </View>
   );
 }
 
@@ -78,12 +64,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     backgroundColor: colors.primary,
-    borderRadius: 24,
-    minHeight: 48,
-    paddingHorizontal: 20,
+    borderRadius: 26,
+    minHeight: 52,
+    paddingHorizontal: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.primary,
     overflow: 'hidden',
   },
@@ -92,6 +78,7 @@ const styles = StyleSheet.create({
   },
   small: {
     width: 48,
+    minHeight: 48,
     paddingHorizontal: 0,
   },
   pressed: {
@@ -103,22 +90,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: font.normal,
-    fontWeight: '600',
-  },
-  icon: {
-    width: 14,
-    height: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bar: {
-    position: 'absolute',
-    width: 14,
-    height: 2,
-    borderRadius: 1,
-  },
-  barVertical: {
-    width: 2,
-    height: 14,
+    fontWeight: '700',
   },
 });

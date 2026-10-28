@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Pressable,
+  ScrollView,
   SectionList,
   StyleSheet,
   Switch,
@@ -10,21 +11,31 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppButton from '../components/AppButton';
+import CategoryBadge from '../components/CategoryBadge';
+import Chip from '../components/Chip';
 import { Dish, useData } from '../data/DataContext';
 import { ScreenProps } from '../navigation';
 import { colors, common, font, spacing } from '../theme';
-import { CATEGORIES, formatMoney, SERVING, TABLE_COUNT } from '../utils';
+import {
+  CATEGORIES,
+  CATEGORY_ICONS,
+  formatMoney,
+  SERVING,
+  TABLE_COUNT,
+} from '../utils';
+
+const ALL = 'Tất cả';
 
 export default function MenuScreen({ navigation }: ScreenProps<'Menu'>) {
   const { dishes, orders, toggleDish, deleteDish } = useData();
+  const [filter, setFilter] = useState(ALL);
 
   const serving = orders.filter(o => o.status === SERVING);
-  const busyTables = new Set(serving.map(o => o.tableNumber)).size;
+  const busySet = new Set(serving.map(o => o.tableNumber));
 
-  const sections = CATEGORIES.map(c => ({
-    title: c,
-    data: dishes.filter(d => d.category === c),
-  })).filter(s => s.data.length > 0);
+  const sections = CATEGORIES.filter(c => filter === ALL || filter === c)
+    .map(c => ({ title: c, data: dishes.filter(d => d.category === c) }))
+    .filter(s => s.data.length > 0);
 
   const onDelete = (dish: Dish) => {
     const inUse = serving.some(o => o.items.some(i => i.dishId === dish.id));
@@ -43,43 +54,72 @@ export default function MenuScreen({ navigation }: ScreenProps<'Menu'>) {
 
   return (
     <SafeAreaView style={common.screen} edges={['bottom', 'left', 'right']}>
-      <Text style={styles.summary}>
-        {dishes.length} món · {busyTables}/{TABLE_COUNT} bàn có khách
-      </Text>
-      <View style={styles.top}>
+      <View style={styles.header}>
+        <View style={styles.flex}>
+          <Text style={styles.summary}>
+            {dishes.length} món · {busySet.size}/{TABLE_COUNT} bàn có khách
+          </Text>
+          {/* Mỗi ô là một bàn, ô tô màu là bàn có khách */}
+          <View style={styles.strip}>
+            {Array.from({ length: TABLE_COUNT }, (_, i) => (
+              <View
+                key={i}
+                style={[styles.dot, busySet.has(i + 1) && styles.dotBusy]}
+              />
+            ))}
+          </View>
+        </View>
         <AppButton
           title="Sơ đồ bàn"
+          icon="table-furniture"
           outline
-          style={styles.flex}
           onPress={() => navigation.navigate('Tables')}
         />
-        <AppButton
-          title="Thêm món"
-          icon="plus"
-          style={styles.flex}
-          onPress={() => navigation.navigate('DishForm', {})}
-        />
+      </View>
+
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+        >
+          {[ALL, ...CATEGORIES].map(c => (
+            <Chip
+              key={c}
+              label={c}
+              icon={CATEGORY_ICONS[c] ?? 'silverware-fork-knife'}
+              selected={filter === c}
+              onPress={() => setFilter(c)}
+            />
+          ))}
+        </ScrollView>
       </View>
 
       <SectionList
         sections={sections}
         keyExtractor={item => item.id}
         renderSectionHeader={({ section }) => (
-          <Text style={styles.sectionTitle}>{section.title}</Text>
+          <Text style={styles.sectionTitle}>
+            {section.title} · {section.data.length}
+          </Text>
         )}
         renderItem={({ item }) => (
           <Pressable
             onPress={() => navigation.navigate('DishForm', { dishId: item.id })}
             onLongPress={() => onDelete(item)}
+            accessibilityHint="Nhấn để sửa, nhấn giữ để xoá"
             style={({ pressed }) => [
               common.card,
               styles.row,
               pressed && styles.pressed,
             ]}
           >
-            <View style={[styles.info, !item.available && styles.soldOut]}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.price}>{formatMoney(item.price)}</Text>
+            <View style={[styles.rowMain, !item.available && styles.soldOut]}>
+              <CategoryBadge category={item.category} />
+              <View style={styles.flex}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.price}>{formatMoney(item.price)}</Text>
+              </View>
             </View>
             {!item.available && <Text style={styles.badge}>Hết món</Text>}
             <Switch
@@ -93,75 +133,120 @@ export default function MenuScreen({ navigation }: ScreenProps<'Menu'>) {
         )}
         ListEmptyComponent={
           <Text style={common.empty}>
-            Chưa có món nào. Bấm “Thêm món” để tạo món đầu tiên.
+            Chưa có món nào. Bấm “+ Thêm món” để tạo món đầu tiên.
           </Text>
         }
         stickySectionHeadersEnabled={false}
         contentContainerStyle={styles.list}
+      />
+
+      <AppButton
+        title="Thêm món"
+        icon="plus"
+        label="+ Thêm món"
+        style={styles.fab}
+        onPress={() => navigation.navigate('DishForm', {})}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  top: {
-    flexDirection: 'row',
-    gap: spacing,
-    paddingHorizontal: spacing,
-    paddingBottom: 4,
-  },
   flex: {
     flex: 1,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing,
+    padding: spacing,
+    paddingTop: spacing * 1.5,
+  },
   summary: {
     fontSize: font.large,
+    fontWeight: '700',
     color: colors.text,
-    fontWeight: '600',
-    padding: spacing,
+  },
+  strip: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 8,
+  },
+  dot: {
+    width: 14,
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  dotBusy: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  chips: {
+    gap: 8,
+    paddingHorizontal: spacing,
+    paddingBottom: 4,
   },
   list: {
-    paddingBottom: spacing,
+    paddingBottom: 100,
   },
   sectionTitle: {
-    fontSize: font.large,
-    fontWeight: 'bold',
+    fontSize: font.small,
+    fontWeight: '700',
     color: colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginHorizontal: spacing,
-    marginTop: spacing,
+    marginTop: spacing * 2,
     marginBottom: 8,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  rowMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing,
   },
   pressed: {
     opacity: 0.7,
-  },
-  info: {
-    flex: 1,
   },
   soldOut: {
     opacity: 0.4,
   },
   name: {
     fontSize: font.large,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
   },
   price: {
     fontSize: font.normal,
-    fontWeight: '600',
-    color: colors.text,
+    color: colors.textMuted,
     marginTop: 2,
   },
   badge: {
-    backgroundColor: colors.danger,
-    color: '#fff',
+    backgroundColor: colors.dangerContainer,
+    color: colors.danger,
     fontSize: font.small,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
+    fontWeight: '700',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
     overflow: 'hidden',
-    marginRight: 8,
+  },
+  fab: {
+    position: 'absolute',
+    right: spacing * 1.5,
+    bottom: spacing * 1.5,
+    elevation: 6,
+    shadowColor: colors.onPrimaryContainer,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
 });

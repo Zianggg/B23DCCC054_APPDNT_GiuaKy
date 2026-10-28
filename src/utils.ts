@@ -1,5 +1,13 @@
 export const CATEGORIES = ['Khai vị', 'Món chính', 'Tráng miệng', 'Đồ uống'];
 
+// Icon (MaterialCommunityIcons) cho từng loại món
+export const CATEGORY_ICONS: Record<string, string> = {
+  'Khai vị': 'leaf',
+  'Món chính': 'noodles',
+  'Tráng miệng': 'cupcake',
+  'Đồ uống': 'cup-outline',
+};
+
 export const SERVING = 'Đang phục vụ';
 export const PAID = 'Đã thanh toán';
 
